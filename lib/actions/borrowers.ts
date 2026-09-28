@@ -22,28 +22,17 @@ export async function createBorrower(input: BorrowerInput): Promise<ActionResult
   const v = parsed.data;
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("borrowers")
-    .insert({
-      name: v.name,
-      phone: v.phone || null,
-      address: v.address || null,
-      id_proof_type: v.idProofType ?? null,
-      id_proof_number: v.idProofNumber || null,
-      guarantor_name: v.guarantorName || null,
-      guarantor_phone: v.guarantorPhone || null,
-      notes: v.notes || null,
-      // Collectors default to being assigned their own new borrower; owner can reassign later.
-      assigned_collector_id: user.role === "collector" ? user.id : null,
-      created_by: user.id,
-    })
-    .select("id")
-    .single();
+  const { data, error } = await supabase.rpc("create_borrower", {
+    p_name: v.name,
+    p_phone: v.phone || null,
+    p_address: v.address || null,
+    p_notes: v.notes || null,
+  });
 
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/borrowers");
-  return { ok: true, id: data.id };
+  return { ok: true, id: data as string };
 }
 
 export async function updateBorrower(id: string, input: BorrowerInput): Promise<ActionResult> {
@@ -57,19 +46,13 @@ export async function updateBorrower(id: string, input: BorrowerInput): Promise<
   const v = parsed.data;
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("borrowers")
-    .update({
-      name: v.name,
-      phone: v.phone || null,
-      address: v.address || null,
-      id_proof_type: v.idProofType ?? null,
-      id_proof_number: v.idProofNumber || null,
-      guarantor_name: v.guarantorName || null,
-      guarantor_phone: v.guarantorPhone || null,
-      notes: v.notes || null,
-    })
-    .eq("id", id);
+  const { error } = await supabase.rpc("update_borrower", {
+    p_borrower_id: id,
+    p_name: v.name,
+    p_phone: v.phone || null,
+    p_address: v.address || null,
+    p_notes: v.notes || null,
+  });
 
   if (error) return { ok: false, error: error.message };
 
