@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function getBorrowerProfile(borrowerId: string) {
   const supabase = await createClient();
-  await supabase.rpc("refresh_all_installments");
+  // No refresh_all_installments() call here — see lib/data/dashboard.ts for why.
 
   const [{ data: borrower }, { data: loans }] = await Promise.all([
     supabase.from("borrowers").select("*").eq("id", borrowerId).single(),

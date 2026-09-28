@@ -41,25 +41,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && !isPublic) {
-    // Server-side allowlist enforcement: reject any authenticated Google account
-    // that isn't provisioned in public.users (which is only populated for allowlisted emails).
-    const { data: profile } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", user.id)
-      .single();
+  // Allowlist enforcement (missing public.users row -> not allowlisted) is handled by
+  // requireUser() in the (app) layout for every protected page, so we don't repeat that
+  // extra DB round trip here on every single navigation. The one exception is /login
+  // itself: a signed-in-but-not-allowlisted user landing back here (bounced by
+  // requireUser()) would otherwise get redirected straight to "/" and loop forever, so
+  // this one path pays for the check.
+  if (user && path === "/login") {
+    const { data: profile } = await supabase.from("users").select("id").eq("id", user.id).single();
 
     if (!profile) {
       await supabase.auth.signOut();
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("error", "not_allowlisted");
-      return NextResponse.redirect(url);
+      return response;
     }
-  }
 
-  if (user && path === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

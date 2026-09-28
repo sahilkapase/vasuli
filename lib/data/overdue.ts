@@ -11,7 +11,7 @@ export interface OverdueItem {
 
 export async function getOverdueList(): Promise<OverdueItem[]> {
   const supabase = await createClient();
-  await supabase.rpc("refresh_all_installments");
+  // No refresh_all_installments() call here — see lib/data/dashboard.ts for why.
 
   const { data: installments } = await supabase
     .from("installments")

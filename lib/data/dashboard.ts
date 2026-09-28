@@ -17,7 +17,10 @@ export interface DashboardData {
 
 export async function getDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
-  await supabase.rpc("refresh_all_installments");
+  // Not calling refresh_all_installments() here for speed — this is a read-only overview,
+  // and installments get refreshed whenever someone actually opens a loan or collects a
+  // payment (see lib/data/loan.ts and lib/data/collect.ts). Worst case: figures here are
+  // stale by however long since a loan was last touched, which is fine for a dashboard.
 
   const [{ data: loans }, { data: installments }] = await Promise.all([
     supabase.from("loans").select("principal_paise, outstanding_principal_paise, status"),
