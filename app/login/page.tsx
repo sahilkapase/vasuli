@@ -27,8 +27,18 @@ function LoginCard() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-4">
+      <video
+        className="absolute inset-0 h-full w-full object-cover"
+        src="/login_animation.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-hidden
+      />
+      {/* card sits centered so it covers the watermark baked into the video */}
+      <Card className="relative w-full max-w-sm bg-background/90 backdrop-blur-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl text-primary">Vasuli</CardTitle>
           <CardDescription>Money-lending record system</CardDescription>
